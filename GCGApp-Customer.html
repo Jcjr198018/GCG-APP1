@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<title>GCGLimousine — Book Now</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; font-family: 'Jost', sans-serif; background: #FFFFFF; color: #111111; }
+.app { display: flex; flex-direction: column; min-height: 100vh; max-width: 480px; margin: 0 auto; background: #FFFFFF; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+
+/* HEADER */
+.header {
+  background: linear-gradient(160deg, #FAF6EE 0%, #F0E8D5 100%);
+  padding: 30px 24px 24px;
+  text-align: center;
+  border-bottom: 2px solid rgba(184,144,46,0.25);
+}
+.header-logo { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700; color: #B8902E; letter-spacing: 0.05em; }
+.header-tagline { font-size: 0.75rem; color: #111111; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 4px; }
+.header-sub { font-size: 0.85rem; color: #111111; margin-top: 10px; line-height: 1.5; }
+
+/* FORM */
+.form-body { padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
+.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #B8902E; font-weight: 600; }
+.field-input {
+  background: #F9F6F0;
+  border: 1px solid rgba(184,144,46,0.3);
+  border-radius: 8px;
+  padding: 13px 14px;
+  color: #111111;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.95rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.field-input:focus { border-color: #B8902E; }
+.field-input::placeholder { color: rgba(17,17,17,0.35); }
+select.field-input { cursor: pointer; }
+textarea.field-input { resize: none; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.section-divider {
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #B8902E;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  margin: 4px 0;
+}
+.section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: rgba(184,144,46,0.25); }
+
+.submit-btn {
+  background: #B8902E;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  padding: 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Jost', sans-serif;
+  width: 100%;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+.submit-btn:active { background: #D4A843; }
+
+/* FOOTER */
+.footer {
+  background: #FAF6EE;
+  padding: 20px 24px;
+  text-align: center;
+  border-top: 1px solid rgba(184,144,46,0.2);
+}
+.footer-title { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #B8902E; font-weight: 600; margin-bottom: 10px; }
+.footer-contacts { display: flex; flex-direction: column; gap: 8px; }
+.footer-contact { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; color: #111111; text-decoration: none; }
+.footer-contact:hover { color: #B8902E; }
+
+/* SUCCESS */
+.success-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 30px;
+  text-align: center;
+  gap: 16px;
+  flex: 1;
+}
+.success-screen.show { display: flex; }
+.success-icon { font-size: 4rem; }
+.success-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: #111111; }
+.success-text { font-size: 0.9rem; color: #111111; line-height: 1.7; max-width: 300px; }
+.success-btn {
+  background: #B8902E;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 14px 32px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Jost', sans-serif;
+  margin-top: 10px;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-logo">GCGLimousine</div>
+    <div class="header-tagline">St. Louis, MO & Surrounding Areas</div>
+    <div class="header-sub">Fill out the form below and we'll contact you with a free quote within 24 hours.</div>
+  </div>
+
+  <!-- BOOKING FORM -->
+  <div id="form-section">
+    <div class="form-body">
+      <div class="section-divider">Your Info</div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">First Name *</label>
+          <input class="field-input" id="f-first" type="text" placeholder="First name"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Last Name *</label>
+          <input class="field-input" id="f-last" type="text" placeholder="Last name"/>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Phone Number *</label>
+        <input class="field-input" id="f-phone" type="tel" placeholder="(314) 000-0000"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Email Address</label>
+        <input class="field-input" id="f-email" type="email" placeholder="your@email.com"/>
+      </div>
+
+      <div class="section-divider">Job Details</div>
+      <div class="field-group">
+        <label class="field-label">Service Type *</label>
+        <select class="field-input" id="f-service">
+          <option value="">Select a service...</option>
+          <option>Moving</option>
+          <option>Delivery</option>
+          <option>Commercial Logistics</option>
+          <option>Event Transport</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Pickup Address *</label>
+        <input class="field-input" id="f-pickup" type="text" placeholder="Enter pickup address"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Drop-off Address *</label>
+        <input class="field-input" id="f-dropoff" type="text" placeholder="Enter drop-off address"/>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Preferred Date *</label>
+          <input class="field-input" id="f-date" type="date"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Preferred Time</label>
+          <input class="field-input" id="f-time" type="time"/>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Load Size</label>
+        <select class="field-input" id="f-load">
+          <option value="">Select size...</option>
+          <option>Small (few items)</option>
+          <option>Medium (1 bedroom)</option>
+          <option>Large (2-3 bedroom)</option>
+          <option>Extra Large (4+ bedroom)</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Special Items / Notes</label>
+        <textarea class="field-input" id="f-notes" rows="3" placeholder="Piano, fragile items, stairs, anything we should know..."></textarea>
+      </div>
+
+      <button class="submit-btn" onclick="submitForm()">Request Free Quote</button>
+    </div>
+
+    <!-- FOOTER CONTACTS -->
+    <div class="footer">
+      <div class="footer-title">Questions? Contact Us</div>
+      <div class="footer-contacts">
+        <a class="footer-contact" href="tel:3142035024">📞 (314) 203-5024</a>
+        <a class="footer-contact" href="mailto:guyharold513@gmail.com">✉️ guyharold513@gmail.com</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS SCREEN -->
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Request Submitted!</div>
+    <div class="success-text">Thank you! We received your quote request and will contact you within 24 hours to confirm your booking.</div>
+    <div style="font-size:0.85rem;color:#111111;margin-top:4px;">Questions? Call us at<br/><strong style="color:#B8902E;">(314) 203-5024</strong></div>
+    <button class="success-btn" onclick="resetForm()">Submit Another Request</button>
+  </div>
+
+</div>
+
+<script>
+function submitForm() {
+  const first = document.getElementById('f-first').value.trim();
+  const last = document.getElementById('f-last').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const service = document.getElementById('f-service').value;
+  const pickup = document.getElementById('f-pickup').value.trim();
+  const dropoff = document.getElementById('f-dropoff').value.trim();
+  const date = document.getElementById('f-date').value;
+
+  if (!first || !last || !phone || !service || !pickup || !dropoff || !date) {
+    alert('Please fill in all required fields marked with *');
+    return;
+  }
+
+  // Send email notification
+  const subject = encodeURIComponent(`New GCG Booking Request - ${first} ${last}`);
+  const body = encodeURIComponent(
+    `NEW BOOKING REQUEST\n\n` +
+    `Customer: ${first} ${last}\n` +
+    `Phone: ${phone}\n` +
+    `Email: ${document.getElementById('f-email').value}\n\n` +
+    `Service: ${service}\n` +
+    `Pickup: ${pickup}\n` +
+    `Drop-off: ${dropoff}\n` +
+    `Date: ${date}\n` +
+    `Time: ${document.getElementById('f-time').value}\n` +
+    `Load Size: ${document.getElementById('f-load').value}\n` +
+    `Notes: ${document.getElementById('f-notes').value}`
+  );
+
+  window.location.href = `mailto:guyharold513@gmail.com?subject=${subject}&body=${body}`;
+
+  // Show success screen
+  setTimeout(() => {
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('success-screen').classList.add('show');
+  }, 500);
+}
+
+function resetForm() {
+  ['f-first','f-last','f-phone','f-email','f-pickup','f-dropoff','f-date','f-time','f-notes'].forEach(id => document.getElementById(id).value = '');
+  ['f-service','f-load'].forEach(id => document.getElementById(id).selectedIndex = 0);
+  document.getElementById('form-section').style.display = 'block';
+  document.getElementById('success-screen').classList.remove('show');
+}
+</script>
+</body>
+</html>
