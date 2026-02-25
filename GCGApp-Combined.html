@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<title>GCGLimousine</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; font-family: 'Jost', sans-serif; background: #FFFFFF; color: #111111; }
+
+.app { display: flex; flex-direction: column; min-height: 100vh; max-width: 480px; margin: 0 auto; background: #FFFFFF; box-shadow: 0 0 40px rgba(0,0,0,0.1); position: relative; }
+
+/* ── PAGES ── */
+.page { display: none; flex-direction: column; min-height: 100vh; }
+.page.active { display: flex; }
+
+/* ── SHARED HEADER ── */
+.header {
+  background: linear-gradient(160deg, #FAF6EE 0%, #F0E8D5 100%);
+  padding: 28px 24px 20px;
+  text-align: center;
+  border-bottom: 2px solid rgba(184,144,46,0.25);
+  position: relative;
+}
+.header-logo { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700; color: #B8902E; letter-spacing: 0.05em; }
+.header-tagline { font-size: 0.7rem; color: #111111; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 3px; }
+.header-sub { font-size: 0.85rem; color: #111111; margin-top: 10px; line-height: 1.5; }
+
+/* Hidden owner trigger — tap logo 5 times */
+.owner-trigger { position: absolute; top: 0; right: 0; width: 60px; height: 60px; opacity: 0; cursor: pointer; }
+
+/* ── FORM STYLES ── */
+.form-body { padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #B8902E; font-weight: 600; }
+.field-input {
+  background: #F9F6F0;
+  border: 1px solid rgba(184,144,46,0.3);
+  border-radius: 8px;
+  padding: 13px 14px;
+  color: #111111;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.95rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.field-input:focus { border-color: #B8902E; }
+.field-input::placeholder { color: rgba(17,17,17,0.35); }
+select.field-input { cursor: pointer; }
+textarea.field-input { resize: none; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.section-divider {
+  font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: #B8902E; display: flex; align-items: center; gap: 8px;
+  font-weight: 600; margin: 4px 0;
+}
+.section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: rgba(184,144,46,0.25); }
+
+.submit-btn {
+  background: #B8902E; color: #FFFFFF; font-weight: 700; font-size: 1rem;
+  letter-spacing: 0.08em; padding: 16px; border-radius: 10px; border: none;
+  cursor: pointer; font-family: 'Jost', sans-serif; width: 100%; margin-top: 4px;
+}
+.submit-btn:active { background: #D4A843; }
+
+/* ── FOOTER ── */
+.footer { background: #FAF6EE; padding: 20px 24px; text-align: center; border-top: 1px solid rgba(184,144,46,0.2); }
+.footer-title { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #B8902E; font-weight: 600; margin-bottom: 10px; }
+.footer-contacts { display: flex; flex-direction: column; gap: 8px; }
+.footer-contact { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; color: #111111; text-decoration: none; }
+
+/* ── SUCCESS ── */
+.success-screen { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 60px 30px; text-align: center; gap: 16px; flex: 1; }
+.success-screen.show { display: flex; }
+.success-icon { font-size: 4rem; }
+.success-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: #111111; }
+.success-text { font-size: 0.9rem; color: #111111; line-height: 1.7; max-width: 300px; }
+.success-btn { background: #B8902E; color: #FFFFFF; font-weight: 700; font-size: 0.9rem; padding: 14px 32px; border-radius: 10px; border: none; cursor: pointer; font-family: 'Jost', sans-serif; margin-top: 10px; }
+
+/* ── PASSWORD MODAL ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.show { display: flex; }
+.modal { background: #FFFFFF; border: 2px solid rgba(184,144,46,0.3); border-radius: 20px; padding: 36px 28px; text-align: center; max-width: 320px; width: 100%; }
+.modal-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: #B8902E; font-weight: 700; margin-bottom: 6px; }
+.modal-sub { font-size: 0.75rem; color: #111111; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 24px; }
+.modal-input { background: #F9F6F0; border: 1px solid rgba(184,144,46,0.3); border-radius: 8px; padding: 13px 14px; color: #111111; font-family: 'Jost', sans-serif; font-size: 1rem; width: 100%; outline: none; text-align: center; letter-spacing: 0.2em; margin-bottom: 14px; }
+.modal-input:focus { border-color: #B8902E; }
+.modal-btn { background: #B8902E; color: #FFFFFF; font-weight: 700; font-size: 0.9rem; padding: 14px; border-radius: 10px; border: none; cursor: pointer; font-family: 'Jost', sans-serif; width: 100%; margin-bottom: 10px; }
+.modal-cancel { background: none; border: none; color: #111111; font-family: 'Jost', sans-serif; font-size: 0.85rem; cursor: pointer; padding: 8px; }
+.modal-error { color: #C62828; font-size: 0.8rem; margin-bottom: 10px; display: none; }
+
+/* ── OWNER DASHBOARD ── */
+.owner-topbar {
+  background: #FFFFFF;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid rgba(184,144,46,0.3);
+  flex-shrink: 0;
+}
+.owner-topbar-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 700; color: #B8902E; }
+.owner-topbar-sub { font-size: 0.6rem; color: #111111; letter-spacing: 0.1em; text-transform: uppercase; }
+.logout-btn { background: rgba(184,144,46,0.1); border: 1px solid rgba(184,144,46,0.3); color: #B8902E; font-family: 'Jost', sans-serif; font-size: 0.7rem; font-weight: 600; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
+
+/* Owner screens */
+.owner-content { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+.owner-content::-webkit-scrollbar { display: none; }
+
+.screen { display: none; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* Stats */
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; padding: 16px; background: #FAF6EE; }
+.stat-card { background: #FFFFFF; border: 1px solid rgba(184,144,46,0.25); border-radius: 10px; padding: 14px 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.stat-num { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 700; color: #B8902E; }
+.stat-label { font-size: 0.6rem; color: #111111; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+
+.section-title { font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: #B8902E; padding: 0 16px; margin: 16px 0 10px; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.section-title::after { content: ''; flex: 1; height: 1px; background: rgba(184,144,46,0.25); }
+
+/* Quick actions */
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 20px; background: #FAF6EE; }
+.action-card { background: #FFFFFF; border: 1px solid rgba(184,144,46,0.2); border-radius: 12px; padding: 16px 14px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.action-card:active { transform: scale(0.97); background: #F5EDD6; }
+.action-icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(184,144,46,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+.action-title { font-weight: 600; font-size: 0.88rem; color: #111111; }
+.action-sub { font-size: 0.7rem; color: #111111; }
+
+/* Jobs */
+.jobs-header { background: #FAF6EE; padding: 18px 16px; border-bottom: 1px solid rgba(184,144,46,0.2); display: flex; align-items: center; justify-content: space-between; }
+.jobs-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: #111111; }
+.jobs-header span { font-size: 0.75rem; color: #111111; }
+.filter-row { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; background: #FFFFFF; }
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-btn { white-space: nowrap; padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(184,144,46,0.3); background: #FFFFFF; color: #111111; font-family: 'Jost', sans-serif; font-size: 0.72rem; cursor: pointer; }
+.filter-btn.active { background: #B8902E; color: #FFFFFF; border-color: #B8902E; font-weight: 600; }
+.job-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; background: #F9F6F0; min-height: 200px; }
+.job-card { background: #FFFFFF; border: 1px solid rgba(184,144,46,0.2); border-radius: 12px; padding: 16px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.job-card:active { transform: scale(0.98); }
+.job-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.job-id { font-size: 0.7rem; color: #B8902E; letter-spacing: 0.1em; font-weight: 600; }
+.job-badge { font-size: 0.62rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; text-transform: uppercase; }
+.badge-new { background: rgba(46,125,50,0.1); color: #2E7D32; border: 1px solid rgba(46,125,50,0.3); }
+.badge-quoted { background: rgba(230,81,0,0.1); color: #E65100; border: 1px solid rgba(230,81,0,0.3); }
+.badge-confirmed { background: rgba(21,101,192,0.1); color: #1565C0; border: 1px solid rgba(21,101,192,0.3); }
+.badge-completed { background: rgba(184,144,46,0.1); color: #B8902E; border: 1px solid rgba(184,144,46,0.3); }
+.job-name { font-weight: 600; font-size: 0.95rem; color: #111111; margin-bottom: 4px; }
+.job-meta { font-size: 0.76rem; color: #111111; display: flex; flex-direction: column; gap: 3px; }
+
+/* Quotes */
+.quotes-list { padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #F9F6F0; min-height: 200px; }
+.quote-card { background: #FFFFFF; border: 1px solid rgba(184,144,46,0.2); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.quote-card-header { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(184,144,46,0.15); background: #FAF6EE; }
+.quote-name { font-weight: 600; color: #111111; font-size: 0.95rem; }
+.quote-amount { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: #B8902E; font-weight: 700; }
+.quote-card-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; }
+.quote-line { display: flex; justify-content: space-between; font-size: 0.8rem; }
+.quote-line span:first-child { color: #111111; }
+.quote-line span:last-child { color: #111111; font-weight: 500; }
+.quote-line.total { border-top: 1px solid rgba(184,144,46,0.2); padding-top: 8px; margin-top: 4px; }
+.quote-line.total span { color: #B8902E; font-weight: 700; font-size: 0.9rem; }
+.quote-actions { padding: 12px 16px; display: flex; gap: 8px; }
+.quote-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-family: 'Jost', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.quote-btn-send { background: #B8902E; color: #FFFFFF; }
+.quote-btn-call { background: #FAF6EE; color: #B8902E; border: 1px solid rgba(184,144,46,0.3); }
+
+/* Bottom nav */
+.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #FFFFFF; border-top: 2px solid rgba(184,144,46,0.2); display: flex; z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0 12px; gap: 4px; cursor: pointer; border: none; background: none; color: #AAAAAA; font-family: 'Jost', sans-serif; transition: color 0.2s; }
+.nav-item.active { color: #B8902E; }
+.nav-item svg { width: 22px; height: 22px; }
+.nav-label { font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; }
+
+.fab { position: fixed; bottom: 90px; right: calc(50% - 224px); width: 50px; height: 50px; border-radius: 50%; background: #B8902E; color: #FFFFFF; border: none; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 20px rgba(184,144,46,0.4); z-index: 99; display: flex; align-items: center; justify-content: center; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; text-align: center; gap: 10px; }
+.empty-icon { font-size: 2.5rem; opacity: 0.3; }
+.empty-text { color: #111111; font-size: 0.85rem; line-height: 1.6; }
+
+/* New booking screen inside owner */
+.owner-form { padding: 20px 16px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; }
+.owner-form-header { background: linear-gradient(135deg,#FAF6EE,#F0E8D5); padding: 20px 16px 16px; border-bottom: 1px solid rgba(184,144,46,0.2); }
+.owner-form-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: #111111; }
+.owner-form-header p { font-size: 0.8rem; color: #111111; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- CUSTOMER PAGE -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="page active" id="page-customer">
+    <div class="header">
+      <div class="header-logo">GCGLimousine</div>
+      <div class="header-tagline">St. Louis, MO & Surrounding Areas</div>
+      <div class="header-sub">Fill out the form below and we'll contact you with a free quote within 24 hours.</div>
+      <!-- Hidden owner trigger: tap 5 times -->
+      <div class="owner-trigger" onclick="ownerTap()"></div>
+    </div>
+
+    <div id="form-section">
+      <div class="form-body">
+        <div class="section-divider">Your Info</div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">First Name *</label>
+            <input class="field-input" id="f-first" type="text" placeholder="First name"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Last Name *</label>
+            <input class="field-input" id="f-last" type="text" placeholder="Last name"/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Phone Number *</label>
+          <input class="field-input" id="f-phone" type="tel" placeholder="(314) 000-0000"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Email Address</label>
+          <input class="field-input" id="f-email" type="email" placeholder="your@email.com"/>
+        </div>
+        <div class="section-divider">Job Details</div>
+        <div class="field-group">
+          <label class="field-label">Service Type *</label>
+          <select class="field-input" id="f-service">
+            <option value="">Select a service...</option>
+            <option>Moving</option>
+            <option>Delivery</option>
+            <option>Commercial Logistics</option>
+            <option>Event Transport</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Pickup Address *</label>
+          <input class="field-input" id="f-pickup" type="text" placeholder="Enter pickup address"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Drop-off Address *</label>
+          <input class="field-input" id="f-dropoff" type="text" placeholder="Enter drop-off address"/>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Preferred Date *</label>
+            <input class="field-input" id="f-date" type="date"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Preferred Time</label>
+            <input class="field-input" id="f-time" type="time"/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Load Size</label>
+          <select class="field-input" id="f-load">
+            <option value="">Select size...</option>
+            <option>Small (few items)</option>
+            <option>Medium (1 bedroom)</option>
+            <option>Large (2-3 bedroom)</option>
+            <option>Extra Large (4+ bedroom)</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Special Items / Notes</label>
+          <textarea class="field-input" id="f-notes" rows="3" placeholder="Piano, fragile items, stairs, anything we should know..."></textarea>
+        </div>
+        <button class="submit-btn" onclick="submitCustomer()">Request Free Quote</button>
+      </div>
+
+      <div class="footer">
+        <div class="footer-title">Questions? Contact Us</div>
+        <div class="footer-contacts">
+          <a class="footer-contact" href="tel:3142035024">📞 (314) 203-5024</a>
+          <a class="footer-contact" href="mailto:guyharold513@gmail.com">✉️ guyharold513@gmail.com</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="success-screen" id="success-screen">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Request Submitted!</div>
+      <div class="success-text">Thank you! We received your quote request and will contact you within 24 hours to confirm your booking.</div>
+      <div style="font-size:0.85rem;color:#111111;margin-top:4px;">Questions? Call us at<br/><strong style="color:#B8902E;">(314) 203-5024</strong></div>
+      <button class="success-btn" onclick="resetCustomerForm()">Submit Another Request</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- OWNER DASHBOARD PAGE -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="page" id="page-owner">
+    <div class="owner-topbar">
+      <div>
+        <div class="owner-topbar-logo">GCGLimousine</div>
+        <div class="owner-topbar-sub">Owner Dashboard</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">🔒 Lock</button>
+    </div>
+
+    <div class="owner-content">
+
+      <!-- HOME SCREEN -->
+      <div class="screen active" id="owner-home">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-num" id="stat-total">0</div>
+            <div class="stat-label">Total Jobs</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-new">0</div>
+            <div class="stat-label">New</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-done">0</div>
+            <div class="stat-label">Done</div>
+          </div>
+        </div>
+
+        <div class="section-title">Quick Actions</div>
+        <div class="quick-actions">
+          <div class="action-card" onclick="ownerScreen('owner-book')">
+            <div class="action-icon">📋</div>
+            <div class="action-title">New Booking</div>
+            <div class="action-sub">Add a job manually</div>
+          </div>
+          <div class="action-card" onclick="ownerScreen('owner-jobs')">
+            <div class="action-icon">🚚</div>
+            <div class="action-title">View Jobs</div>
+            <div class="action-sub">Manage all jobs</div>
+          </div>
+          <div class="action-card" onclick="ownerScreen('owner-quotes')">
+            <div class="action-icon">💰</div>
+            <div class="action-title">Quotes</div>
+            <div class="action-sub">Send invoices</div>
+          </div>
+          <div class="action-card" onclick="window.location.href='tel:3142035024'">
+            <div class="action-icon">📞</div>
+            <div class="action-title">Call Harold Guy</div>
+            <div class="action-sub">(314) 203-5024</div>
+          </div>
+          <div class="action-card" onclick="window.location.href='mailto:guyharold513@gmail.com'">
+            <div class="action-icon">✉️</div>
+            <div class="action-title">Email Harold Guy</div>
+            <div class="action-sub">guyharold513@gmail.com</div>
+          </div>
+          <div class="action-card" onclick="window.location.href='tel:3148106547'">
+            <div class="action-icon">📞</div>
+            <div class="action-title">Call Guy-Bey</div>
+            <div class="action-sub">(314) 810-6547</div>
+          </div>
+          <div class="action-card" onclick="window.location.href='mailto:bey@yahoo.com'">
+            <div class="action-icon">✉️</div>
+            <div class="action-title">Email Guy-Bey</div>
+            <div class="action-sub">bey@yahoo.com</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOOK SCREEN -->
+      <div class="screen" id="owner-book">
+        <div class="owner-form-header">
+          <h2>New Booking</h2>
+          <p>Add a job manually</p>
+        </div>
+        <div class="owner-form">
+          <div class="section-divider">Customer Info</div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">First Name *</label>
+              <input class="field-input" id="o-first" type="text" placeholder="First name"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Last Name *</label>
+              <input class="field-input" id="o-last" type="text" placeholder="Last name"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Phone *</label>
+            <input class="field-input" id="o-phone" type="tel" placeholder="(314) 000-0000"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Email</label>
+            <input class="field-input" id="o-email" type="email" placeholder="customer@email.com"/>
+          </div>
+          <div class="section-divider">Job Details</div>
+          <div class="field-group">
+            <label class="field-label">Service Type *</label>
+            <select class="field-input" id="o-service">
+              <option value="">Select service...</option>
+              <option>Moving</option>
+              <option>Delivery</option>
+              <option>Commercial Logistics</option>
+              <option>Event Transport</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Pickup Address *</label>
+            <input class="field-input" id="o-pickup" type="text" placeholder="Enter pickup address"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Drop-off Address *</label>
+            <input class="field-input" id="o-dropoff" type="text" placeholder="Enter drop-off address"/>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Date *</label>
+              <input class="field-input" id="o-date" type="date"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Time</label>
+              <input class="field-input" id="o-time" type="time"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Load Size</label>
+            <select class="field-input" id="o-load">
+              <option value="">Select size...</option>
+              <option>Small (few items)</option>
+              <option>Medium (1 bedroom)</option>
+              <option>Large (2-3 bedroom)</option>
+              <option>Extra Large (4+ bedroom)</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Notes</label>
+            <textarea class="field-input" id="o-notes" rows="3" placeholder="Special items, notes..."></textarea>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Assign To</label>
+            <select class="field-input" id="o-assign">
+              <option value="">Unassigned</option>
+              <option>Harold Guy</option>
+              <option>Guy-Bey</option>
+            </select>
+          </div>
+          <button class="submit-btn" onclick="submitOwnerBooking()">Save Booking</button>
+        </div>
+      </div>
+
+      <!-- JOBS SCREEN -->
+      <div class="screen" id="owner-jobs">
+        <div class="jobs-header">
+          <h2>All Jobs</h2>
+          <span id="job-count">0 jobs</span>
+        </div>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="filterJobs('All',this)">All</button>
+          <button class="filter-btn" onclick="filterJobs('New',this)">New</button>
+          <button class="filter-btn" onclick="filterJobs('Quoted',this)">Quoted</button>
+          <button class="filter-btn" onclick="filterJobs('Confirmed',this)">Confirmed</button>
+          <button class="filter-btn" onclick="filterJobs('Completed',this)">Completed</button>
+        </div>
+        <div class="job-list" id="job-list"></div>
+        <button class="fab" onclick="ownerScreen('owner-book')">+</button>
+      </div>
+
+      <!-- QUOTES SCREEN -->
+      <div class="screen" id="owner-quotes">
+        <div class="jobs-header"><h2>Quotes & Invoices</h2></div>
+        <div class="quotes-list" id="quotes-list"></div>
+      </div>
+
+    </div>
+
+    <!-- OWNER BOTTOM NAV -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="ownerScreen('owner-home')" id="nav-home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" onclick="ownerScreen('owner-book')" id="nav-book">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span class="nav-label">Book</span>
+      </button>
+      <button class="nav-item" onclick="ownerScreen('owner-jobs')" id="nav-jobs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span class="nav-label">Jobs</span>
+      </button>
+      <button class="nav-item" onclick="ownerScreen('owner-quotes')" id="nav-quotes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        <span class="nav-label">Quotes</span>
+      </button>
+    </nav>
+  </div>
+
+</div>
+
+<!-- PASSWORD MODAL -->
+<div class="modal-overlay" id="pw-modal">
+  <div class="modal">
+    <div class="modal-logo">GCGLimousine</div>
+    <div class="modal-sub">Owner Access</div>
+    <input class="modal-input" id="pw-input" type="password" placeholder="••••••" maxlength="20"
+      onkeydown="if(event.key==='Enter') checkPassword()"/>
+    <div class="modal-error" id="pw-error">Incorrect password. Try again.</div>
+    <button class="modal-btn" onclick="checkPassword()">Unlock Dashboard</button>
+    <button class="modal-cancel" onclick="closePwModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const OWNER_PASSWORD = 'GCG2024'; // Change this to your preferred password
+
+// ── DATA ──
+let bookings = JSON.parse(localStorage.getItem('gcg_bookings') || '[]');
+let jobCounter = parseInt(localStorage.getItem('gcg_counter') || '0');
+
+function saveData() {
+  localStorage.setItem('gcg_bookings', JSON.stringify(bookings));
+  localStorage.setItem('gcg_counter', jobCounter.toString());
+}
+
+// ── OWNER TRIGGER (tap top-right corner 5 times) ──
+let tapCount = 0, tapTimer;
+function ownerTap() {
+  tapCount++;
+  clearTimeout(tapTimer);
+  tapTimer = setTimeout(() => tapCount = 0, 2000);
+  if (tapCount >= 5) {
+    tapCount = 0;
+    openPwModal();
+  }
+}
+
+// ── PASSWORD MODAL ──
+function openPwModal() {
+  document.getElementById('pw-modal').classList.add('show');
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').style.display = 'none';
+  setTimeout(() => document.getElementById('pw-input').focus(), 100);
+}
+
+function closePwModal() {
+  document.getElementById('pw-modal').classList.remove('show');
+}
+
+function checkPassword() {
+  const val = document.getElementById('pw-input').value;
+  if (val === OWNER_PASSWORD) {
+    closePwModal();
+    showOwnerDashboard();
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+// ── PAGE SWITCHING ──
+function showOwnerDashboard() {
+  document.getElementById('page-customer').classList.remove('active');
+  document.getElementById('page-owner').classList.add('active');
+  updateStats();
+  renderJobs('All');
+}
+
+function logout() {
+  document.getElementById('page-owner').classList.remove('active');
+  document.getElementById('page-customer').classList.add('active');
+}
+
+function ownerScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const map = { 'owner-home': 'nav-home', 'owner-book': 'nav-book', 'owner-jobs': 'nav-jobs', 'owner-quotes': 'nav-quotes' };
+  if (map[id]) document.getElementById(map[id]).classList.add('active');
+  if (id === 'owner-jobs') renderJobs('All');
+  if (id === 'owner-quotes') renderQuotes();
+  if (id === 'owner-home') updateStats();
+  document.querySelector('.owner-content').scrollTop = 0;
+}
+
+// ── STATS ──
+function updateStats() {
+  document.getElementById('stat-total').textContent = bookings.length;
+  document.getElementById('stat-new').textContent = bookings.filter(b => b.status === 'New').length;
+  document.getElementById('stat-done').textContent = bookings.filter(b => b.status === 'Completed').length;
+}
+
+// ── CUSTOMER FORM ──
+function submitCustomer() {
+  const first = document.getElementById('f-first').value.trim();
+  const last = document.getElementById('f-last').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const service = document.getElementById('f-service').value;
+  const pickup = document.getElementById('f-pickup').value.trim();
+  const dropoff = document.getElementById('f-dropoff').value.trim();
+  const date = document.getElementById('f-date').value;
+  if (!first || !last || !phone || !service || !pickup || !dropoff || !date) {
+    alert('Please fill in all required fields marked with *');
+    return;
+  }
+  // Save booking automatically
+  jobCounter++;
+  const booking = {
+    id: 'GCG-' + String(jobCounter).padStart(3,'0'),
+    date: new Date().toLocaleDateString(),
+    name: first + ' ' + last,
+    phone, email: document.getElementById('f-email').value,
+    service, pickup, dropoff,
+    jobDate: date, jobTime: document.getElementById('f-time').value,
+    load: document.getElementById('f-load').value,
+    notes: document.getElementById('f-notes').value,
+    assignedTo: 'Unassigned', status: 'New'
+  };
+  bookings.unshift(booking);
+  saveData();
+  // Email notification
+  const subject = encodeURIComponent(`New GCG Booking - ${first} ${last}`);
+  const body = encodeURIComponent(`NEW BOOKING REQUEST\n\nCustomer: ${first} ${last}\nPhone: ${phone}\nEmail: ${document.getElementById('f-email').value}\n\nService: ${service}\nPickup: ${pickup}\nDrop-off: ${dropoff}\nDate: ${date}\nTime: ${document.getElementById('f-time').value}\nLoad Size: ${document.getElementById('f-load').value}\nNotes: ${document.getElementById('f-notes').value}`);
+  window.location.href = `mailto:guyharold513@gmail.com?subject=${subject}&body=${body}`;
+  setTimeout(() => {
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('success-screen').classList.add('show');
+  }, 500);
+}
+
+function resetCustomerForm() {
+  ['f-first','f-last','f-phone','f-email','f-pickup','f-dropoff','f-date','f-time','f-notes'].forEach(id => document.getElementById(id).value = '');
+  ['f-service','f-load'].forEach(id => document.getElementById(id).selectedIndex = 0);
+  document.getElementById('form-section').style.display = 'block';
+  document.getElementById('success-screen').classList.remove('show');
+}
+
+// ── OWNER BOOKING ──
+function submitOwnerBooking() {
+  const first = document.getElementById('o-first').value.trim();
+  const last = document.getElementById('o-last').value.trim();
+  const phone = document.getElementById('o-phone').value.trim();
+  const service = document.getElementById('o-service').value;
+  const pickup = document.getElementById('o-pickup').value.trim();
+  const dropoff = document.getElementById('o-dropoff').value.trim();
+  const date = document.getElementById('o-date').value;
+  if (!first || !last || !phone || !service || !pickup || !dropoff || !date) {
+    alert('Please fill in all required fields marked with *');
+    return;
+  }
+  jobCounter++;
+  bookings.unshift({
+    id: 'GCG-' + String(jobCounter).padStart(3,'0'),
+    date: new Date().toLocaleDateString(),
+    name: first + ' ' + last,
+    phone, email: document.getElementById('o-email').value,
+    service, pickup, dropoff,
+    jobDate: date, jobTime: document.getElementById('o-time').value,
+    load: document.getElementById('o-load').value,
+    notes: document.getElementById('o-notes').value,
+    assignedTo: document.getElementById('o-assign').value || 'Unassigned',
+    status: 'New'
+  });
+  saveData();
+  ['o-first','o-last','o-phone','o-email','o-pickup','o-dropoff','o-date','o-time','o-notes'].forEach(id => document.getElementById(id).value = '');
+  ['o-service','o-load','o-assign'].forEach(id => document.getElementById(id).selectedIndex = 0);
+  alert('Booking saved!');
+  ownerScreen('owner-jobs');
+}
+
+// ── JOBS ──
+function filterJobs(status, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderJobs(status);
+}
+
+function renderJobs(filter) {
+  const list = document.getElementById('job-list');
+  const filtered = filter === 'All' ? bookings : bookings.filter(b => b.status === filter);
+  document.getElementById('job-count').textContent = filtered.length + ' job' + (filtered.length !== 1 ? 's' : '');
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">No jobs yet.</div></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(b => `
+    <div class="job-card" onclick="changeStatus('${b.id}')">
+      <div class="job-card-top">
+        <span class="job-id">${b.id}</span>
+        <span class="job-badge badge-${b.status.toLowerCase()}">${b.status}</span>
+      </div>
+      <div class="job-name">${b.name}</div>
+      <div class="job-meta">
+        <span>📅 ${b.jobDate}${b.jobTime ? ' @ ' + b.jobTime : ''}</span>
+        <span>🚚 ${b.service}</span>
+        <span>📍 ${b.pickup}</span>
+        <span>👤 ${b.assignedTo}</span>
+      </div>
+    </div>`).join('');
+}
+
+function changeStatus(id) {
+  const statuses = ['New','Quoted','Confirmed','Completed'];
+  const b = bookings.find(b => b.id === id);
+  if (!b) return;
+  const next = statuses[(statuses.indexOf(b.status) + 1) % statuses.length];
+  if (confirm(`Move "${b.name}" from ${b.status} → ${next}?`)) {
+    b.status = next; saveData(); renderJobs('All');
+    document.querySelectorAll('.filter-btn').forEach((btn,i) => btn.classList.toggle('active', i === 0));
+  }
+}
+
+// ── QUOTES ──
+function renderQuotes() {
+  const list = document.getElementById('quotes-list');
+  if (bookings.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">💼</div><div class="empty-text">No quotes yet.</div></div>`;
+    return;
+  }
+  list.innerHTML = bookings.map(b => {
+    const hours = 2, rate = b.service === 'Moving' ? 75 : 65;
+    const labor = hours * rate, truck = 50, subtotal = labor + truck;
+    const tax = subtotal * 0.08, total = subtotal + tax;
+    return `
+    <div class="quote-card">
+      <div class="quote-card-header">
+        <div>
+          <div class="quote-name">${b.name}</div>
+          <div style="font-size:0.72rem;color:#111">${b.id} · ${b.service}</div>
+        </div>
+        <div class="quote-amount">$${total.toFixed(2)}</div>
+      </div>
+      <div class="quote-card-body">
+        <div class="quote-line"><span>Labor (${hours}hrs @ $${rate}/hr)</span><span>$${labor.toFixed(2)}</span></div>
+        <div class="quote-line"><span>Truck Fee</span><span>$${truck.toFixed(2)}</span></div>
+        <div class="quote-line"><span>Tax (8%)</span><span>$${tax.toFixed(2)}</span></div>
+        <div class="quote-line total"><span>Total Due</span><span>$${total.toFixed(2)}</span></div>
+      </div>
+      <div class="quote-actions">
+        <button class="quote-btn quote-btn-send" onclick="sendQuote('${b.name}','${b.phone}','$${total.toFixed(2)}')">📤 Send Quote</button>
+        <button class="quote-btn quote-btn-call" onclick="window.location.href='tel:${b.phone}'">📞 Call</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function sendQuote(name, phone, amount) {
+  const msg = encodeURIComponent(`Hi ${name}, your GCGLimousine quote is ${amount}. Reply to confirm or call (314) 203-5024.`);
+  window.location.href = `sms:${phone}?body=${msg}`;
+}
+
+updateStats();
+</script>
+</body>
+</html>
